@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: GymTracker
+  h2:
+    console:
+      path: /my-h2-console
+  datasource:
+    url: jdbc:h2:file:./db/gym_tracker;DATABASE_TO_UPPER=false
+    username: as
+    password: test
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
