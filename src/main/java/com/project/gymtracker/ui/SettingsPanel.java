@@ -119,7 +119,6 @@ public class SettingsPanel extends JPanel {
             }
         });
 
-        // Populate categories for the comboBox
         List<Category> categories = categoryService.getAllCategories();
         for (Category c : categories) {
             categoryComboBox.addItem(c.getName());

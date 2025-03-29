@@ -17,7 +17,7 @@ public class GymTrackerApplication {
     public static void main(String[] args) {
         ConfigurableApplicationContext context =
                 new SpringApplicationBuilder(GymTrackerApplication.class)
-                        .headless(false) // <-- Important for Swing applications
+                        .headless(false)
                         .run(args);
 
         SwingUtilities.invokeLater(() -> {

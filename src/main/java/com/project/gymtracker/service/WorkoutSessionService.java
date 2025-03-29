@@ -59,24 +59,4 @@ public class WorkoutSessionService {
                 .sorted(Comparator.comparing(WorkoutSession::getDate))
                 .collect(Collectors.toList());
     }
-
-    public DefaultCategoryDataset getExerciseProgress(String exerciseName) {
-        List<WorkoutSession> sessions = workoutSessionRepository.findAllByOrderByDateAsc();
-
-        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-        for (WorkoutSession session : sessions) {
-            for (ExerciseLog exerciseLog : session.getExerciseLogs()) {
-                if (exerciseLog.getExercise().getName().equals(exerciseName)) {
-                    double maxWeight = exerciseLog.getSets().stream()
-                            .mapToDouble(SetLog::getWeight)
-                            .max()
-                            .orElse(0);
-                    dataset.addValue(maxWeight, exerciseName, session.getDate().toString());
-                }
-            }
-        }
-
-        return dataset;
-    }
 }
