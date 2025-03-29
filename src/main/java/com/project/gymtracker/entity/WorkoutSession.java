@@ -13,6 +13,7 @@ public class WorkoutSession {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private LocalDate date;
+    private String name;
 
     @OneToMany(mappedBy = "workoutSession", cascade = CascadeType.ALL)
     private List<ExerciseLog> exerciseLogs = new ArrayList<>();
