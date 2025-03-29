@@ -1,4 +1,4 @@
-package com.project.gymtracker;
+package com.project.gymtracker.entity;
 
 import jakarta.persistence.*;
 

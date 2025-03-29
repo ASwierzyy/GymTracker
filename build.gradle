@@ -25,6 +25,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.h2database:h2'
+    implementation 'org.jfree:jfreechart:1.5.4'
+    implementation 'org.jfree:jcommon:1.0.24'
 }
 
 tasks.named('test') {
