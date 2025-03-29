@@ -1,49 +1,127 @@
 package com.project.gymtracker.ui.components;
 
+import com.project.gymtracker.entity.*;
+import com.project.gymtracker.service.ExerciseService;
+import org.springframework.stereotype.Component;
+
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 
-public class ExercisePanel extends JPanel{
+public class ExercisePanel extends JPanel {
 
-    private JComboBox<String> exerciseCombo;
-    private JPanel setsPanel;
+    private final JComboBox<String> exerciseComboBox;
+    private final JPanel setsContainer;
+    private final List<SetRow> sets = new ArrayList<>();
+    private final Runnable removeExerciseCallback;
 
-    public ExercisePanel() {
+    public ExercisePanel(ExerciseService exerciseService, Consumer<ExercisePanel> removeExerciseCallback) {
+        this.removeExerciseCallback = () -> removeExerciseCallback.accept(this);
+
         setLayout(new BorderLayout());
-        exerciseCombo = new JComboBox<>(new String[]{"Bench Press", "Squats", "Deadlift"});
+        exerciseComboBox = new JComboBox<>();
+        exerciseService.getAllExercises().forEach(e -> exerciseComboBox.addItem(e.getName()));
 
-        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        headerPanel.add(new JLabel("Exercise:"));
-        headerPanel.add(exerciseCombo);
-        add(headerPanel, BorderLayout.NORTH);
+        JButton removeExerciseBtn = new JButton("- Remove Exercise");
+        removeExerciseBtn.addActionListener(e -> this.removeExerciseCallback.run());
 
-        setsPanel = new JPanel();
-        setsPanel.setLayout(new BoxLayout(setsPanel, BoxLayout.Y_AXIS));
-        JScrollPane scrollPane = new JScrollPane(setsPanel);
-        add(scrollPane, BorderLayout.CENTER);
+        JPanel top = new JPanel(new FlowLayout());
+        top.add(new JLabel("Exercise:"));
+        top.add(exerciseComboBox);
+        top.add(removeExerciseBtn);
 
-        JButton addSetButton = new JButton("+ Add Set");
-        addSetButton.addActionListener(e -> addSetRow());
+        JButton addSetBtn = new JButton("+ Add Set");
+        addSetBtn.addActionListener(e -> addSet());
 
-        add(addSetButton, BorderLayout.SOUTH);
+        setsContainer = new JPanel();
+        setsContainer.setLayout(new BoxLayout(setsContainer, BoxLayout.Y_AXIS));
 
-        addSetRow();
+        JPanel bottom = new JPanel(new FlowLayout());
+        bottom.add(addSetBtn);
+
+        add(top, BorderLayout.NORTH);
+        add(setsContainer, BorderLayout.CENTER);
+        add(bottom, BorderLayout.SOUTH);
+
+        addSet();
     }
 
-    private void addSetRow() {
-        JPanel setRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        setRow.add(new JLabel("Set #" + (setsPanel.getComponentCount() + 1)));
-        setRow.add(new JTextField(5)); // Reps
-        setRow.add(new JTextField(5)); // Weight
-        JButton removeButton = new JButton("❌");
-        removeButton.addActionListener(e -> {
-            setsPanel.remove(setRow);
-            setsPanel.revalidate();
-            setsPanel.repaint();
-        });
-        setRow.add(removeButton);
-        setsPanel.add(setRow);
-        setsPanel.revalidate();
-        setsPanel.repaint();
+    private void addSet() {
+        SetRow setRow = new SetRow(this::removeSet);
+        sets.add(setRow);
+        setsContainer.add(setRow);
+        refreshUI();
+    }
+
+    private void removeSet(SetRow setRow) {
+        sets.remove(setRow);
+        setsContainer.remove(setRow);
+        refreshUI();
+    }
+
+    public ExerciseLog toExerciseLog(WorkoutSession session, ExerciseService exerciseService) {
+        if (sets.isEmpty()) return null;
+
+        String selectedExerciseName = (String) exerciseComboBox.getSelectedItem();
+        Exercise exercise = exerciseService.findByName(selectedExerciseName);
+        if (exercise == null) {
+            JOptionPane.showMessageDialog(this, "Selected exercise not found!");
+            return null;
+        }
+
+        ExerciseLog exerciseLog = new ExerciseLog();
+        exerciseLog.setExercise(exercise);
+        exerciseLog.setWorkoutSession(session);
+
+        for (SetRow set : sets) {
+            SetLog setLog = set.toSetLog(exerciseLog);
+            if (setLog != null) {
+                exerciseLog.getSets().add(setLog);
+            }
+        }
+
+        return exerciseLog.getSets().isEmpty() ? null : exerciseLog;
+    }
+
+    private void refreshUI() {
+        revalidate();
+        repaint();
+    }
+}
+
+class SetRow extends JPanel {
+
+    private final JTextField repsField = new JTextField(4);
+    private final JTextField weightField = new JTextField(4);
+    private final Runnable removeCallback;
+
+    public SetRow(Consumer<SetRow> removeCallback) {
+        this.removeCallback = () -> removeCallback.accept(this);
+
+        setLayout(new FlowLayout());
+        add(new JLabel("Reps:"));
+        add(repsField);
+        add(new JLabel("Weight (kg):"));
+        add(weightField);
+
+        JButton removeBtn = new JButton("- Remove Set");
+        removeBtn.addActionListener(e -> this.removeCallback.run());
+        add(removeBtn);
+    }
+
+    public SetLog toSetLog(ExerciseLog exerciseLog) {
+        try {
+            int reps = Integer.parseInt(repsField.getText());
+            double weight = Double.parseDouble(weightField.getText());
+            SetLog setLog = new SetLog();
+            setLog.setReps(reps);
+            setLog.setWeight(weight);
+            setLog.setExerciseLog(exerciseLog);
+            return setLog;
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 }

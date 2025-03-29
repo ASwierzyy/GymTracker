@@ -1,33 +1,64 @@
 package com.project.gymtracker.ui;
 
+import com.project.gymtracker.entity.WorkoutSession;
+import com.project.gymtracker.service.ExerciseService;
+import com.project.gymtracker.service.WorkoutSessionService;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.springframework.stereotype.Component;
 
 import javax.swing.*;
 import java.awt.*;
 
+@Component
 public class ProgressChartPanel extends JPanel {
 
-    public ProgressChartPanel() {
+    private final WorkoutSessionService workoutSessionService;
+    private final ExerciseService exerciseService;
+    private JComboBox<String> exerciseComboBox;
+    ChartPanel chartPanel;
+
+    public ProgressChartPanel(WorkoutSessionService workoutSessionService, ExerciseService exerciseService) {
+        this.workoutSessionService = workoutSessionService;
+        this.exerciseService = exerciseService;
         setLayout(new BorderLayout());
 
-        XYSeries series = new XYSeries("Bench Press 1RM");
-        series.add(1, 60);
-        series.add(2, 65);
-        series.add(3, 70);
-        series.add(4, 75);
-        series.add(5, 80);
+        exerciseComboBox = new JComboBox<>();
+        exerciseService.getAllExercises().forEach(e -> exerciseComboBox.addItem(e.getName()));
+        exerciseComboBox.addActionListener(e -> refreshChart());
 
-        XYSeriesCollection dataset = new XYSeriesCollection(series);
-        JFreeChart chart = ChartFactory.createXYLineChart(
-                "Bench Press Progress", "Workout Session", "Weight (kg)",
-                dataset, PlotOrientation.VERTICAL, true, true, false);
-
-        ChartPanel chartPanel = new ChartPanel(chart);
+        add(exerciseComboBox, BorderLayout.NORTH);
+        chartPanel = new ChartPanel(null);
         add(chartPanel, BorderLayout.CENTER);
+
+        refreshChart();
+    }
+
+    private void refreshChart() {
+        String exerciseName = (String) exerciseComboBox.getSelectedItem();
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+       var sessions = workoutSessionService.findAllByExerciseName(exerciseName);
+
+        for (WorkoutSession session : sessions) {
+            double totalWeight = session.getExerciseLogs().stream()
+                    .filter(el -> el.getExercise().getName().equals(exerciseName))
+                    .flatMap(el -> el.getSets().stream())
+                    .mapToDouble(sl -> sl.getReps() * sl.getWeight())
+                    .sum();
+
+            dataset.addValue(totalWeight, exerciseName, session.getDate().toString());
+        }
+
+        JFreeChart chart = ChartFactory.createLineChart(
+                "Total Weight Over Time (" + exerciseName + ")",
+                "Date",
+                "Total Weight (kg)",
+                dataset
+        );
+
+        chartPanel.setChart(chart);
     }
 }

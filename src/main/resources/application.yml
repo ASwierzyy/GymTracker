@@ -1,6 +1,9 @@
 spring:
   application:
     name: GymTracker
+  main:
+    # noinspection SpringBootApplicationYaml
+    headless: false
   h2:
     console:
       path: /my-h2-console

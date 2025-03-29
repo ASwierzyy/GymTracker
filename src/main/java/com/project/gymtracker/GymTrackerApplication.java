@@ -1,9 +1,13 @@
 package com.project.gymtracker;
 
+import com.project.gymtracker.service.ExerciseService;
+import com.project.gymtracker.service.WorkoutSessionService;
 import com.project.gymtracker.ui.MainWindow;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import javax.swing.*;
 
@@ -11,12 +15,14 @@ import javax.swing.*;
 public class GymTrackerApplication {
 
     public static void main(String[] args) {
-        SpringApplicationBuilder builder = new SpringApplicationBuilder(GymTrackerApplication.class);
-        builder.headless(false).run(args);
+        ConfigurableApplicationContext context =
+                new SpringApplicationBuilder(GymTrackerApplication.class)
+                        .headless(false) // <-- Important for Swing applications
+                        .run(args);
 
         SwingUtilities.invokeLater(() -> {
-            MainWindow window = new MainWindow();
-            window.setVisible(true);
+            MainWindow mainWindow = context.getBean(MainWindow.class);
+            mainWindow.setVisible(true);
         });
     }
 

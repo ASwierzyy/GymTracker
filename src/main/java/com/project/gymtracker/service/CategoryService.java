@@ -21,6 +21,10 @@ public class CategoryService {
         return categoryRepository.findAll();
     }
 
+    public Category findByName(String name) {
+        return categoryRepository.findByName(name).orElse(null);
+    }
+
     public Optional<Category> getCategoryById(Long id) {
         return categoryRepository.findById(id);
     }

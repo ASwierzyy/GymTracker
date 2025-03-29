@@ -19,4 +19,49 @@ public class Exercise {
 
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.ALL)
     private List<ExerciseLog> exerciseLogs = new ArrayList<>();
+
+    public Exercise(){}
+
+    public Exercise(String name, Category category) {
+        this.name = name;
+        this.category = category;
+    }
+
+    public Exercise(String name) {
+        this.name = name;
+    }
+
+    public Exercise(String name, Category category, List<ExerciseLog> exerciseLogs) {
+        this.name = name;
+        this.category = category;
+        this.exerciseLogs = exerciseLogs;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public List<ExerciseLog> getExerciseLogs() {
+        return exerciseLogs;
+    }
+
+    public void setExerciseLogs(List<ExerciseLog> exerciseLogs) {
+        this.exerciseLogs = exerciseLogs;
+    }
 }

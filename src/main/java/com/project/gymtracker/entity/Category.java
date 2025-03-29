@@ -15,4 +15,35 @@ public class Category {
 
     @OneToMany(mappedBy = "category")
     private List<Exercise> exercises = new ArrayList<>();
+
+    public Category(){}
+
+    public Category(String name) {
+        this.name = name;
+    }
+
+    public Category(String name, List<Exercise> exercises) {
+        this.name = name;
+        this.exercises = exercises;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<Exercise> getExercises() {
+        return exercises;
+    }
+
+    public void setExercises(List<Exercise> exercises) {
+        this.exercises = exercises;
+    }
 }

@@ -2,11 +2,14 @@ package com.project.gymtracker.service;
 
 import com.project.gymtracker.entity.Exercise;
 import com.project.gymtracker.repository.ExerciseRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ExerciseService {
@@ -37,5 +40,17 @@ public class ExerciseService {
 
     public List<Exercise> getExercisesByCategory(Long categoryId) {
         return exerciseRepository.findByCategoryId(categoryId);
+    }
+
+
+    public List<String> findAllNames() {
+        return exerciseRepository.findAll()
+                .stream()
+                .map(Exercise::getName)
+                .collect(Collectors.toList());
+    }
+
+    public Exercise findByName(String name) {
+        return exerciseRepository.findByName(name).orElseThrow(() -> new EntityNotFoundException("Exercise not found: " + name));
     }
 }
